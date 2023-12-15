@@ -1,0 +1,5 @@
+name: ReportSync
+version: '${project.version}'
+main: dev.rodrigo.reportsync.ReportSync
+description: "Reports for Bungee/Spigot with Discord integration."
+author: "Rodrigo R."

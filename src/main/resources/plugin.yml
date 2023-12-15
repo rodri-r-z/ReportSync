@@ -1,0 +1,9 @@
+name: ReportSync
+main: dev.rodrigo.reportsync.spigot.SpigotPlugin
+version: 1.0
+description: "Reports for Bungee/Spigot with Discord integration."
+author: "Rodrigo R."
+commands:
+  report:
+    usage: "/report <nick> <reason>"
+    description: "Send a report to a player."
