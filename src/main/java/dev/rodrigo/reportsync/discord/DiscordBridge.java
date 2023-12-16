@@ -43,15 +43,16 @@ public class DiscordBridge {
         }
     }
 
-    private String replacePlaceholders(String input, String executor, String reason, String target) {
+    private String replacePlaceholders(String input, String executor, String reason, String target, String server) {
         if (input == null) return null;
         return input
                 .replaceAll("(?i)%executor%", executor)
                 .replaceAll("(?i)%reason%", reason)
+                .replaceAll("(?i)%server%", server)
                 .replaceAll("(?i)%target%", target);
     }
 
-    public void SendReport(String executor, String reason, String target) {
+    public void SendReport(String executor, String reason, String target, String server) {
         plugin.getProxy().getScheduler().runAsync(plugin, () -> {
             try {
                 if (!config.AsBoolean("discord.enabled")) return;
@@ -61,7 +62,8 @@ public class DiscordBridge {
                                 config.AsString("discord.embed.title"),
                                 executor,
                                 reason,
-                                target
+                                target,
+                                server
                         )
                 );
                 EmbedBuilder.getClass().getMethod("setDescription", CharSequence.class).invoke(EmbedBuilder,
@@ -69,7 +71,8 @@ public class DiscordBridge {
                                 config.AsString("discord.embed.description"),
                                 executor,
                                 reason,
-                                target
+                                target,
+                                server
                         )
                 );
                 EmbedBuilder.getClass().getMethod("setUrl", String.class).invoke(EmbedBuilder,
@@ -77,7 +80,8 @@ public class DiscordBridge {
                                 config.AsString("discord.embed.url"),
                                 executor,
                                 reason,
-                                target
+                                target,
+                                server
                         )
                 );
                 EmbedBuilder.getClass().getMethod("setImage", String.class).invoke(EmbedBuilder,
@@ -85,7 +89,8 @@ public class DiscordBridge {
                                 config.AsString("discord.embed.image"),
                                 executor,
                                 reason,
-                                target
+                                target,
+                                server
                         )
                 );
                 EmbedBuilder.getClass().getMethod("setThumbnail", String.class).invoke(EmbedBuilder,
@@ -93,7 +98,8 @@ public class DiscordBridge {
                                 config.AsString("discord.embed.thumbnail"),
                                 executor,
                                 reason,
-                                target
+                                target,
+                                server
                         )
                 );
                 EmbedBuilder.getClass().getMethod("setAuthor", String.class, String.class).invoke(EmbedBuilder,
@@ -101,13 +107,15 @@ public class DiscordBridge {
                                 config.AsString("discord.embed.author.name"),
                                 executor,
                                 reason,
-                                target
+                                target,
+                                server
                         ),
                         replacePlaceholders(
                                 config.AsString("discord.embed.author.icon_url"),
                                 executor,
                                 reason,
-                                target
+                                target,
+                                server
                         )
                 );
                 EmbedBuilder.getClass().getMethod("setFooter", String.class, String.class).invoke(EmbedBuilder,
@@ -115,13 +123,15 @@ public class DiscordBridge {
                                 config.AsString("discord.embed.footer.text"),
                                 executor,
                                 reason,
-                                target
+                                target,
+                                server
                         ),
                         replacePlaceholders(
                                 config.AsString("discord.embed.footer.icon_url"),
                                 executor,
                                 reason,
-                                target
+                                target,
+                                server
                         )
                 );
                 EmbedBuilder.getClass().getMethod("setColor", int.class).invoke(EmbedBuilder, config.AsInt("discord.embed.color"));

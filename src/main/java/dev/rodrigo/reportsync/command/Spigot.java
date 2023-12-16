@@ -95,13 +95,14 @@ public class Spigot implements CommandExecutor, TabExecutor {
             for (Player plr : plugin.getServer().getOnlinePlayers().stream().filter(a -> a.hasPermission("reportsync.staff")).collect(Collectors.toList())) {
                 plr.sendMessage(
                         String.join("\n", plugin.config.AsStringList("report_recieved.report"))
-                                .replaceAll("%executor%", sender.getName())
-                                .replaceAll("%reason%", reason)
-                                .replaceAll("%target%", player.getName())
+                                .replaceAll("(?i)%executor%", sender.getName())
+                                .replaceAll("(?i)%reason%", reason)
+                                .replaceAll("(?i)%target%", player.getName())
+                                .replaceAll("(?i)%server%", sender.getWorld().getName())
                                 .replaceAll("&", "§")
                 );
             }
-            discordBridge.SendReport(sender.getName(), reason, player.getName());
+            discordBridge.SendReport(sender.getName(), reason, player.getName(), sender.getWorld().getName());
         });
         return true;
     }

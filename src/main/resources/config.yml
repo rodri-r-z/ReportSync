@@ -8,7 +8,8 @@ discord:
   channel_id: "0" # The channel ID where the reports will be sent
   embed:
     title: "New report recieved"
-    description: "%executor% reported %target% for %reason%"
+    description: "%executor% reported %target% for %reason% on %server%"
+    # %server% will be replaced with the world name if the plugin is running Spigot
     color: 0xFF0000
     # Those placeholders are available on all options
     url: null
@@ -37,6 +38,7 @@ messages:
     - "&aExecutor: %executor%"
     - "&aReported user: %target%"
     - "&aReason: %reason%"
+    - "&aServer: %server%" # %server% will be replaced with the world name if the plugin is running Spigot
 
 overrides:
   report_staff: false # Allow users to report staff members

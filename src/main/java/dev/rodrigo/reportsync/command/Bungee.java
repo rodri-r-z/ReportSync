@@ -115,14 +115,15 @@ public class Bungee extends Command implements TabExecutor {
                 plr.sendMessage(
                         TextComponent.fromLegacyText(
                                 String.join("\n", plugin.config.AsStringList("report_recieved.report"))
-                                        .replaceAll("%executor%", sender.getName())
-                                        .replaceAll("%reason%", reason)
-                                        .replaceAll("%target%", player.getName())
+                                        .replaceAll("(?i)%executor%", sender.getName())
+                                        .replaceAll("(?i)%reason%", reason)
+                                        .replaceAll("(?i)%target%", player.getName())
+                                        .replaceAll("(?i)%server%", sender.getServer().getInfo().getName())
                                         .replaceAll("&", "§")
                         )
                 );
             }
-            discordBridge.SendReport(sender.getName(), reason, player.getName());
+            discordBridge.SendReport(sender.getName(), reason, player.getName(), sender.getServer().getInfo().getName());
         });
     }
 
