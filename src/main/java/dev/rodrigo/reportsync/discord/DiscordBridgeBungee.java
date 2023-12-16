@@ -1,6 +1,7 @@
-package dev.rodrigo.reportsync.spigot;
+package dev.rodrigo.reportsync.discord;
 
-import dev.rodrigo.FancyYAML;
+import dev.rodrigo.reportsync.bungee.ReportSyncBungee;
+import dev.rodrigo.reportsync.lib.FancyYAML;
 
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -9,13 +10,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class DiscordBridgetSpigot {
+public class DiscordBridgeBungee {
     private URLClassLoader loader;
     private Object bot;
     private Object MessageChannel;
     private FancyYAML config;
-    private SpigotPlugin plugin;
-    public DiscordBridgetSpigot(Path libsFolder, FancyYAML config, SpigotPlugin plugin) {
+    private ReportSyncBungee plugin;
+    public DiscordBridgeBungee(Path libsFolder, FancyYAML config, ReportSyncBungee plugin) {
         try {
             if (config.AsBoolean("discord.enabled")) {;
                 this.config = config;
@@ -52,7 +53,7 @@ public class DiscordBridgetSpigot {
     }
 
     public void SendReport(String executor, String reason, String target, String server) {
-        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+        plugin.getProxy().getScheduler().runAsync(plugin, () -> {
             try {
                 if (!config.AsBoolean("discord.enabled")) return;
                 final Object EmbedBuilder = loader.loadClass("net.dv8tion.jda.api.EmbedBuilder").getConstructor().newInstance();

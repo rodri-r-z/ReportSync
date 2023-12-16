@@ -1,35 +1,37 @@
 package dev.rodrigo.reportsync.command;
 
-import dev.rodrigo.reportsync.bungee.ReportSyncBungee;
-import dev.rodrigo.reportsync.discord.DiscordBridgeBungee;
+import com.velocitypowered.api.command.CommandSource;
+import com.velocitypowered.api.command.SimpleCommand;
+import com.velocitypowered.api.proxy.Player;
+import dev.rodrigo.reportsync.ReportSync;
+import dev.rodrigo.reportsync.discord.DiscordBridge;
 import dev.rodrigo.reportsync.lib.FancyYAML;
+import net.kyori.adventure.text.Component;
 import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.CommandSender;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.api.plugin.Command;
-import net.md_5.bungee.api.plugin.TabExecutor;
 
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class Bungee extends Command implements TabExecutor {
-    private final ReportSyncBungee plugin;
-    private final DiscordBridgeBungee discordBridge;
+public class Velocity implements SimpleCommand {
 
-    public Bungee(ReportSyncBungee plugin, DiscordBridgeBungee discordBridge) {
-        super("report");
+    private final ReportSync plugin;
+    private final DiscordBridge discordBridge;
+
+    public Velocity(ReportSync plugin, DiscordBridge discordBridge) {
         this.plugin = plugin;
         this.discordBridge = discordBridge;
     }
-
+    
     @Override
-    public void execute(CommandSender commandSender, String[] args) {
-        plugin.getProxy().getScheduler().runAsync(plugin, () -> {
-            if (!(commandSender instanceof ProxiedPlayer)) {
+    public void execute(Invocation invocation) {
+        plugin.proxyServer.getScheduler().buildTask(plugin, () -> {
+            final CommandSource commandSender = invocation.source();
+            final String[] args = invocation.arguments();
+            if (!(commandSender instanceof Player)) {
                 commandSender.sendMessage(
-                        TextComponent.fromLegacyText(
+                        Component.text(
                                 ChatColor.translateAlternateColorCodes('&', plugin.config.AsString("messages.error_console"))
                         )
                 );
@@ -37,7 +39,7 @@ public class Bungee extends Command implements TabExecutor {
             }
             if (args.length < 2) {
                 commandSender.sendMessage(
-                        TextComponent.fromLegacyText(
+                        Component.text(
                                 ChatColor.translateAlternateColorCodes('&', plugin.config.AsString("messages.usage"))
                         )
                 );
@@ -45,26 +47,26 @@ public class Bungee extends Command implements TabExecutor {
             }
             final String nick = args[0];
             final String reason = String.join(" ", args).substring(nick.length() + 1);
-            final ProxiedPlayer sender = (ProxiedPlayer) commandSender;
-            final ProxiedPlayer player = plugin.getProxy().getPlayer(nick);
-            if  (player != null && player.isConnected() && player.getName().equals(sender.getName())) {
+            final Player sender = (Player) commandSender;
+            final Optional<Player> player = plugin.proxyServer.getPlayer(nick);
+            if  (player.isPresent() && player.get().isActive() && player.get().getUsername().equals(sender.getUsername())) {
                 commandSender.sendMessage(
-                        TextComponent.fromLegacyText(
+                        Component.text(
                                 ChatColor.translateAlternateColorCodes('&', plugin.config.AsString("messages.error_report_self"))
                         )
                 );
                 return;
             }
-            if (nick.equalsIgnoreCase("reload") && (player == null || !player.isConnected())) {
+            if (nick.equalsIgnoreCase("reload") && (!player.isPresent() || !player.get().isActive())) {
                 if (sender.hasPermission("reportsync.reload")) {
                     try {
-                        plugin.config = new FancyYAML(plugin.getDataFolder().toPath().resolve("config.yml"));
+                        plugin.config = new FancyYAML(plugin.dataFolder.resolve("config.yml"));
                     } catch (FileNotFoundException exception) {
-                        plugin.getLogger().severe("Could not reload config.yml because: " + exception.getMessage());
+                        plugin.logger.error("Could not reload config.yml because: " + exception.getMessage());
                         return;
                     }
                     commandSender.sendMessage(
-                            TextComponent.fromLegacyText(
+                            Component.text(
                                     ChatColor.translateAlternateColorCodes('&', plugin.config.AsString("messages.config_reloaded"))
                             )
                     );
@@ -73,7 +75,7 @@ public class Bungee extends Command implements TabExecutor {
                 } else {
                     if (!plugin.config.AsBoolean("overrides.hide_reload")) {
                         commandSender.sendMessage(
-                                TextComponent.fromLegacyText(
+                                Component.text(
                                         ChatColor.translateAlternateColorCodes('&', plugin.config.AsString("messages.error_no_permission"))
                                 )
                         );
@@ -82,17 +84,17 @@ public class Bungee extends Command implements TabExecutor {
                 }
 
             }
-            if (player == null || !player.isConnected()) {
+            if (!player.isPresent() || !player.get().isActive()) {
                 commandSender.sendMessage(
-                        TextComponent.fromLegacyText(
+                        Component.text(
                                 ChatColor.translateAlternateColorCodes('&', plugin.config.AsString("messages.error_not_online"))
                         )
                 );
                 return;
             }
-            if (player.hasPermission("reportsync.staff") && !plugin.config.AsBoolean("overrides.report_staff")) {
+            if (player.get().hasPermission("reportsync.staff") && !plugin.config.AsBoolean("overrides.report_staff")) {
                 commandSender.sendMessage(
-                        TextComponent.fromLegacyText(
+                        Component.text(
                                 ChatColor.translateAlternateColorCodes('&', plugin.config.AsString("messages.error_staff"))
                         )
                 );
@@ -100,38 +102,39 @@ public class Bungee extends Command implements TabExecutor {
             }
             if (sender.hasPermission("reportsync.staff") && !plugin.config.AsBoolean("overrides.staff_report")) {
                 commandSender.sendMessage(
-                        TextComponent.fromLegacyText(
+                        Component.text(
                                 ChatColor.translateAlternateColorCodes('&', plugin.config.AsString("messages.staff_report"))
                         )
                 );
                 return;
             }
             commandSender.sendMessage(
-                    TextComponent.fromLegacyText(
+                    Component.text(
                             ChatColor.translateAlternateColorCodes('&', plugin.config.AsString("messages.report_sent"))
                     )
             );
-            for (ProxiedPlayer plr : plugin.getProxy().getPlayers().stream().filter(a -> a.hasPermission("reportsync.staff")).collect(Collectors.toList())) {
+            if (!sender.getCurrentServer().isPresent()) {
+                plugin.logger.error("The player " + sender.getUsername() + " is not connected to a server");
+                return;
+            }
+            for (Player plr : plugin.proxyServer.getAllPlayers().stream().filter(a -> a.hasPermission("reportsync.staff")).collect(Collectors.toList())) {
                 plr.sendMessage(
-                        TextComponent.fromLegacyText(
+                        Component.text(
                                 String.join("\n", plugin.config.AsStringList("report_recieved.report"))
-                                        .replaceAll("(?i)%executor%", sender.getName())
+                                        .replaceAll("(?i)%executor%", sender.getUsername())
                                         .replaceAll("(?i)%reason%", reason)
-                                        .replaceAll("(?i)%target%", player.getName())
-                                        .replaceAll("(?i)%server%", sender.getServer().getInfo().getName())
+                                        .replaceAll("(?i)%target%", player.get().getUsername())
+                                        .replaceAll("(?i)%server%", sender.getCurrentServer().get().getServerInfo().getName())
                                         .replaceAll("&", "§")
                         )
                 );
             }
-            discordBridge.SendReport(sender.getName(), reason, player.getName(), sender.getServer().getInfo().getName());
-        });
+            discordBridge.SendReport(sender.getUsername(), reason, player.get().getUsername(), sender.getCurrentServer().get().getServerInfo().getName());
+        }).schedule();
     }
 
     @Override
-    public Iterable<String> onTabComplete(CommandSender commandSender, String[] args) {
-        if (args.length < 2) {
-            return plugin.getProxy().getPlayers().stream().map(ProxiedPlayer::getName).collect(Collectors.toList());
-        }
-        return new ArrayList<>();
+    public List<String> suggest(Invocation invocation) {
+        return plugin.proxyServer.getAllPlayers().stream().map(Player::getUsername).collect(Collectors.toList());
     }
 }

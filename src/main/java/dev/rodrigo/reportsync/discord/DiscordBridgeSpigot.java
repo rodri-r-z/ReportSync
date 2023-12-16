@@ -1,7 +1,7 @@
 package dev.rodrigo.reportsync.discord;
 
-import dev.rodrigo.reportsync.ReportSync;
 import dev.rodrigo.reportsync.lib.FancyYAML;
+import dev.rodrigo.reportsync.spigot.SpigotPlugin;
 
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -10,13 +10,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class DiscordBridge {
+public class DiscordBridgeSpigot {
     private URLClassLoader loader;
     private Object bot;
     private Object MessageChannel;
     private FancyYAML config;
-    private ReportSync plugin;
-    public DiscordBridge(Path libsFolder, FancyYAML config, ReportSync plugin) {
+    private SpigotPlugin plugin;
+    public DiscordBridgeSpigot(Path libsFolder, FancyYAML config, SpigotPlugin plugin) {
         try {
             if (config.AsBoolean("discord.enabled")) {;
                 this.config = config;
@@ -39,7 +39,7 @@ public class DiscordBridge {
         try {
             MessageChannel = bot.getClass().getMethod("getTextChannelById", String.class).invoke(bot, config.AsString("discord.channel_id"));
         } catch (Exception e) {
-            plugin.logger.error("Could not reload ReportSync because: " + e.getMessage());
+            plugin.getLogger().severe("Could not reload ReportSync because: " + e.getMessage());
         }
     }
 
@@ -53,7 +53,7 @@ public class DiscordBridge {
     }
 
     public void SendReport(String executor, String reason, String target, String server) {
-        plugin.proxyServer.getScheduler().buildTask(plugin, () -> {
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
                 if (!config.AsBoolean("discord.enabled")) return;
                 final Object EmbedBuilder = loader.loadClass("net.dv8tion.jda.api.EmbedBuilder").getConstructor().newInstance();
@@ -141,9 +141,9 @@ public class DiscordBridge {
                 final Object message = MessageChannel.getClass().getMethod("sendMessageEmbeds", Collection.class).invoke(MessageChannel, embeds);
                 message.getClass().getMethod("queue").invoke(message);
             } catch (Exception e) {
-                plugin.logger.error("Failed to send report to Discord: " + e.getMessage());
+                plugin.getLogger().severe("Failed to send report to Discord: " + e.getMessage());
                 throw new RuntimeException(e);
             }
-        }).schedule();
+        });
     }
 }

@@ -1,7 +1,7 @@
 package dev.rodrigo.reportsync.command;
 
-import dev.rodrigo.FancyYAML;
-import dev.rodrigo.reportsync.spigot.DiscordBridgetSpigot;
+import dev.rodrigo.reportsync.discord.DiscordBridgeSpigot;
+import dev.rodrigo.reportsync.lib.FancyYAML;
 import dev.rodrigo.reportsync.spigot.SpigotPlugin;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -16,9 +16,9 @@ import java.util.stream.Collectors;
 
 public class Spigot implements CommandExecutor, TabExecutor {
     private final SpigotPlugin plugin;
-    private final DiscordBridgetSpigot discordBridge;
+    private final DiscordBridgeSpigot discordBridge;
 
-    public Spigot(SpigotPlugin plugin, DiscordBridgetSpigot discordBridge) {
+    public Spigot(SpigotPlugin plugin, DiscordBridgeSpigot discordBridge) {
         this.plugin = plugin;
         this.discordBridge = discordBridge;
     }
