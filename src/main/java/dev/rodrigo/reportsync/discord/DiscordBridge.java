@@ -44,6 +44,8 @@ public class DiscordBridge {
                             if (method.getName().equals("onEvent")) {
                                 if (args[0].getClass().getName().equals(SlashCommandInteractionEvent.getName())) {
                                     if (!config.AsBoolean("discord.command.enabled")) return null;
+                                    Object command = args[0].getClass().getMethod("getName").invoke(args[0]).toString();
+                                    if (command != config.AsString("discord.command.name")) return null;
                                     listener.onSlashCommandInteraction(args[0], discordReportBroadcaster, parent);
                                 }
                                 return null;
