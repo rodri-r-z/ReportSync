@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @Plugin(
         id = "reportsync",
         name = "ReportSync",
-        version = "1.3"
+        version = "1.4"
 )
 public class ReportSync {
     public final Logger logger;
