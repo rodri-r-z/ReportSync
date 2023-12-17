@@ -1,17 +1,29 @@
 package dev.rodrigo.reportsync.spigot;
 
 import dev.rodrigo.reportsync.command.Spigot;
-import dev.rodrigo.reportsync.discord.DiscordBridgeSpigot;
+import dev.rodrigo.reportsync.discord.DiscordBridge;
 import dev.rodrigo.reportsync.lib.FancyYAML;
 import dev.rodrigo.reportsync.network.Http;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class SpigotPlugin extends JavaPlugin {
     public FancyYAML config;
+
+    public void discordReportBroadcast(String message) {
+        getServer().getScheduler().runTaskAsynchronously(this, () -> {
+            for (Player plr : getServer().getOnlinePlayers().stream().filter(a -> a.hasPermission("reportsync.staff")).collect(Collectors.toList())) {
+                plr.sendMessage(
+                        message
+                );
+            }
+        });
+    }
 
     @Override
     public void onEnable() {
@@ -45,7 +57,7 @@ public class SpigotPlugin extends JavaPlugin {
             config = new FancyYAML(dataFolder.toPath().resolve("config.yml"));
             logger.info("Successfully read ReportSync config.");
             logger.info("Looking for discord configuration and enabling.");
-            DiscordBridgeSpigot discordBridge = new DiscordBridgeSpigot(dataFolder.toPath().resolve("libs").resolve("JDA-jar.jar"), config, this);
+            DiscordBridge discordBridge = new DiscordBridge(dataFolder.toPath().resolve("libs").resolve("JDA-jar.jar"), config, getClass().getClassLoader(), this);
             getCommand("report").setExecutor(new Spigot(this, discordBridge));
             logger.info("ReportSync has enabled successfully.");
         } catch (IOException e) {

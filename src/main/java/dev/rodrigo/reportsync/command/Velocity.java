@@ -7,7 +7,6 @@ import dev.rodrigo.reportsync.ReportSync;
 import dev.rodrigo.reportsync.discord.DiscordBridge;
 import dev.rodrigo.reportsync.lib.FancyYAML;
 import net.kyori.adventure.text.Component;
-import net.md_5.bungee.api.ChatColor;
 
 import java.io.FileNotFoundException;
 import java.util.List;
@@ -29,10 +28,20 @@ public class Velocity implements SimpleCommand {
         plugin.proxyServer.getScheduler().buildTask(plugin, () -> {
             final CommandSource commandSender = invocation.source();
             final String[] args = invocation.arguments();
+            if (!commandSender.hasPermission("reportsync.report")) {
+                commandSender.sendMessage(
+                        Component.text(
+                                 plugin.config.AsString("messages.error_no_permission")
+                                         .replaceAll("&", "§")
+                        )
+                );
+                return;
+            }
             if (!(commandSender instanceof Player)) {
                 commandSender.sendMessage(
                         Component.text(
-                                ChatColor.translateAlternateColorCodes('&', plugin.config.AsString("messages.error_console"))
+                                 plugin.config.AsString("messages.error_console")
+                                         .replaceAll("&", "§")
                         )
                 );
                 return;
@@ -40,7 +49,8 @@ public class Velocity implements SimpleCommand {
             if (args.length < 2) {
                 commandSender.sendMessage(
                         Component.text(
-                                ChatColor.translateAlternateColorCodes('&', plugin.config.AsString("messages.usage"))
+                                plugin.config.AsString("messages.usage")
+                                        .replaceAll("&", "§")
                         )
                 );
                 return;
@@ -52,7 +62,8 @@ public class Velocity implements SimpleCommand {
             if  (player.isPresent() && player.get().isActive() && player.get().getUsername().equals(sender.getUsername())) {
                 commandSender.sendMessage(
                         Component.text(
-                                ChatColor.translateAlternateColorCodes('&', plugin.config.AsString("messages.error_report_self"))
+                                plugin.config.AsString("messages.error_report_self")
+                                        .replaceAll("&", "§")
                         )
                 );
                 return;
@@ -67,7 +78,8 @@ public class Velocity implements SimpleCommand {
                     }
                     commandSender.sendMessage(
                             Component.text(
-                                    ChatColor.translateAlternateColorCodes('&', plugin.config.AsString("messages.config_reloaded"))
+                                    plugin.config.AsString("messages.config_reloaded")
+                                            .replaceAll("&", "§")
                             )
                     );
                     discordBridge.StartAgain(plugin.config);
@@ -76,7 +88,8 @@ public class Velocity implements SimpleCommand {
                     if (!plugin.config.AsBoolean("overrides.hide_reload")) {
                         commandSender.sendMessage(
                                 Component.text(
-                                        ChatColor.translateAlternateColorCodes('&', plugin.config.AsString("messages.error_no_permission"))
+                                        plugin.config.AsString("messages.error_no_permission")
+                                                .replaceAll("&", "§")
                                 )
                         );
                         return;
@@ -87,7 +100,8 @@ public class Velocity implements SimpleCommand {
             if (!player.isPresent() || !player.get().isActive()) {
                 commandSender.sendMessage(
                         Component.text(
-                                ChatColor.translateAlternateColorCodes('&', plugin.config.AsString("messages.error_not_online"))
+                                plugin.config.AsString("messages.error_not_online")
+                                        .replaceAll("&", "§")
                         )
                 );
                 return;
@@ -95,7 +109,8 @@ public class Velocity implements SimpleCommand {
             if (player.get().hasPermission("reportsync.staff") && !plugin.config.AsBoolean("overrides.report_staff")) {
                 commandSender.sendMessage(
                         Component.text(
-                                ChatColor.translateAlternateColorCodes('&', plugin.config.AsString("messages.error_staff"))
+                                plugin.config.AsString("messages.error_staff")
+                                        .replaceAll("&", "§")
                         )
                 );
                 return;
@@ -103,14 +118,16 @@ public class Velocity implements SimpleCommand {
             if (sender.hasPermission("reportsync.staff") && !plugin.config.AsBoolean("overrides.staff_report")) {
                 commandSender.sendMessage(
                         Component.text(
-                                ChatColor.translateAlternateColorCodes('&', plugin.config.AsString("messages.staff_report"))
+                                plugin.config.AsString("messages.staff_report")
+                                        .replaceAll("&", "§")
                         )
                 );
                 return;
             }
             commandSender.sendMessage(
                     Component.text(
-                            ChatColor.translateAlternateColorCodes('&', plugin.config.AsString("messages.report_sent"))
+                            plugin.config.AsString("messages.report_sent")
+                                    .replaceAll("&", "§")
                     )
             );
             if (!sender.getCurrentServer().isPresent()) {

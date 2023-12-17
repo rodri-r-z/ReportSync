@@ -1,6 +1,6 @@
 package dev.rodrigo.reportsync.command;
 
-import dev.rodrigo.reportsync.discord.DiscordBridgeSpigot;
+import dev.rodrigo.reportsync.discord.DiscordBridge;
 import dev.rodrigo.reportsync.lib.FancyYAML;
 import dev.rodrigo.reportsync.spigot.SpigotPlugin;
 import org.bukkit.ChatColor;
@@ -16,9 +16,9 @@ import java.util.stream.Collectors;
 
 public class Spigot implements CommandExecutor, TabExecutor {
     private final SpigotPlugin plugin;
-    private final DiscordBridgeSpigot discordBridge;
+    private final DiscordBridge discordBridge;
 
-    public Spigot(SpigotPlugin plugin, DiscordBridgeSpigot discordBridge) {
+    public Spigot(SpigotPlugin plugin, DiscordBridge discordBridge) {
         this.plugin = plugin;
         this.discordBridge = discordBridge;
     }
@@ -26,6 +26,13 @@ public class Spigot implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, org.bukkit.command.Command command, String label, String[] args) {
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+            if (!commandSender.hasPermission("reportsync.report")) {
+                commandSender.sendMessage(
+                        ChatColor.translateAlternateColorCodes('&', plugin.config.AsString("messages.error_no_permission"))
+
+                );
+                return;
+            }
             if (!(commandSender instanceof Player)) {
                 commandSender.sendMessage(
                         ChatColor.translateAlternateColorCodes('&', plugin.config.AsString("messages.error_console"))

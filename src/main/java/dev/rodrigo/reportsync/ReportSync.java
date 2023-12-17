@@ -5,28 +5,43 @@ import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
+import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import dev.rodrigo.reportsync.command.Velocity;
 import dev.rodrigo.reportsync.discord.DiscordBridge;
 import dev.rodrigo.reportsync.lib.FancyYAML;
 import dev.rodrigo.reportsync.network.Http;
+import net.kyori.adventure.text.Component;
 import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.stream.Collectors;
 
 @Plugin(
         id = "reportsync",
         name = "ReportSync",
-        version = "1.2"
+        version = "1.3"
 )
 public class ReportSync {
     public final Logger logger;
     public final ProxyServer proxyServer;
     public final Path dataFolder;
     public FancyYAML config;
+
+    public void discordReportBroadcast(String message) {
+        proxyServer.getScheduler().buildTask(this, () -> {
+            for (Player plr : proxyServer.getAllPlayers().stream().filter(a -> a.hasPermission("reportsync.staff")).collect(Collectors.toList())) {
+                plr.sendMessage(
+                        Component.text(
+                                message
+                        )
+                );
+            }
+        }).schedule();
+    }
     
     @Inject
     public ReportSync(ProxyServer proxyServer, Logger logger, @DataDirectory Path dataFolder) {
@@ -71,7 +86,7 @@ public class ReportSync {
             config = new FancyYAML(dataFolder.resolve("config.yml"));
             logger.info("Successfully read ReportSync config.");
             logger.info("Looking for discord configuration and enabling.");
-            DiscordBridge discordBridge = new DiscordBridge(dataFolder.resolve("libs").resolve("JDA-jar.jar"), config, this);
+            DiscordBridge discordBridge = new DiscordBridge(dataFolder.resolve("libs").resolve("JDA-jar.jar"), config, getClass().getClassLoader(), this);
             proxyServer.getCommandManager().register("report", new Velocity(this, discordBridge));
             logger.info("ReportSync has enabled successfully.");
         } catch (IOException e) {

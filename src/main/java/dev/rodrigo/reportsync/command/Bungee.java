@@ -1,7 +1,7 @@
 package dev.rodrigo.reportsync.command;
 
 import dev.rodrigo.reportsync.bungee.ReportSyncBungee;
-import dev.rodrigo.reportsync.discord.DiscordBridgeBungee;
+import dev.rodrigo.reportsync.discord.DiscordBridge;
 import dev.rodrigo.reportsync.lib.FancyYAML;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
@@ -16,10 +16,10 @@ import java.util.stream.Collectors;
 
 public class Bungee extends Command implements TabExecutor {
     private final ReportSyncBungee plugin;
-    private final DiscordBridgeBungee discordBridge;
+    private final DiscordBridge discordBridge;
 
-    public Bungee(ReportSyncBungee plugin, DiscordBridgeBungee discordBridge) {
-        super("report");
+    public Bungee(ReportSyncBungee plugin, DiscordBridge discordBridge) {
+        super("report", "reportsync.report");
         this.plugin = plugin;
         this.discordBridge = discordBridge;
     }
@@ -27,6 +27,14 @@ public class Bungee extends Command implements TabExecutor {
     @Override
     public void execute(CommandSender commandSender, String[] args) {
         plugin.getProxy().getScheduler().runAsync(plugin, () -> {
+            if (!commandSender.hasPermission("reportsync.report")) {
+                commandSender.sendMessage(
+                        TextComponent.fromLegacyText(
+                                ChatColor.translateAlternateColorCodes('&', plugin.config.AsString("messages.error_no_permission"))
+                        )
+                );
+                return;
+            }
             if (!(commandSender instanceof ProxiedPlayer)) {
                 commandSender.sendMessage(
                         TextComponent.fromLegacyText(
